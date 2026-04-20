@@ -1,0 +1,1 @@
+latexmk -pdf -pvc -f -pdflatex="pdflatex -synctex=1 -interaction=nonstopmode" slides.tex

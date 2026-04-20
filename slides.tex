@@ -1,0 +1,633 @@
+% ============================================================
+%  HSE University — Beamer Presentation Template
+%  Resolution  : 1920 × 1080  (aspectratio=169)
+%  Compiler    : pdfLaTeX  (Overleaf)
+%  Theme file  : hse.sty  (must be in the same folder)
+% ============================================================
+\documentclass[aspectratio=169,12pt,t,compress]{beamer}
+
+% ── Russian language support ─────────────────────────────────
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+
+\usepackage{amsmath, amssymb, amsthm} % Чтобы юзать математические символы
+
+
+% ── HSE theme ────────────────────────────────────────────────
+\usepackage{static/hse}
+
+\newcommand{\hlred}[1]{%
+    \emred{$\displaystyle#1$}%
+}
+
+
+\setbeamertemplate{headline}[hse theme]
+\setbeamertemplate{frametitle}[hse theme]
+\setbeamertemplate{footline}[hse theme]
+
+% ── Override localisation macros (now UTF-8 is active) ───────
+\renewcommand{\LogoPlaceholderText}{ВШЭ\,/\,HSE\\LOGO}
+\renewcommand{\ThankYouText}{Спасибо за внимание!}
+\renewcommand{\ContactsText}{Telegram}
+\renewcommand{\FeedbackText}{Фидбек+материалы}
+
+% ── Additional packages ───────────────────────────────────────
+\usepackage{qrcode}   % QR codes on the final slide
+
+% ============================================================
+%  PRESENTATION METADATA — fill in before use
+% ============================================================
+\newcommand{\EventName}{Умножая таланты}
+\newcommand{\EventLocation}{Санкт-Петербург}
+\newcommand{\PresentationTitle}{Обучение с подкреплением}
+\newcommand{\PresentationSubtitle}{Страшная математика + нестрашная физика жидкостей}
+\newcommand{\AuthorName}{Леонтьев Михаил}
+\newcommand{\AuthorRole}{ПАДИИ, 2 курс}
+\newcommand{\AuthorAffiliation}{НИУ ВШЭ — Санкт-Петербург}
+\newcommand{\PresentationDate}{20 апреля 2026}
+
+% Text shown in the footer (left side)
+\renewcommand{\FooterLeft}{\AuthorName\ \textbullet\ \AuthorAffiliation}
+
+% URLs for the final slide QR codes
+\newcommand{\ContactURL}{https://t.me/michlea\_tg}
+\newcommand{\FeedbackURL}{https://forms.gle/uQ1pAMNS5AStLQVEA}
+% ============================================================
+\begin{document}
+
+% ── TITLE SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\titlepage
+\end{frame}
+
+% ── TABLE OF CONTENTS ────────────────────────────────────────
+% [nonavbar] keeps this slide out of the nav-bar dots
+\begin{frame}{Содержание}
+	\tableofcontents
+\end{frame}
+
+% ============================================================
+
+\section{Введение в RL}
+\sectionslide{Введение в RL}
+
+% ============================================================
+
+\begin{frame}{Обучение с подкреплением}
+	% \imagewithtext{файл}{содержимое правой колонки}
+	\imagewithtext{static/images/mario.jpg}{%
+		Представьте, что вам нужно научиться (=написать алгоритм) для игры в Марио. У вас есть: приставка с этой игрой и --- В С Ё.
+
+		Как быть?
+	}
+\end{frame}
+
+\begin{frame}{Цикл взаимодействия}
+	\imagewithtext{static/images/reward_cycle.jpg}{
+		В каждый момент времени $t$:
+		\begin{itemize}
+			\item Наша среда находится в состоянии (\textbf{state}) $s_{t}$
+			\item Мы можем сделать действие (\textbf{action}) $a_{t}$
+			\item За это действие мы получаем награду (\textbf{reward}) $r_{t}$ (в зависимости от $s_{t}, a_{t}$)
+			\item После этого игра переходит в состояние $s_{t+1}$ (в зависимости от $s_{t}, a_{t}$)
+		\end{itemize}
+		Есть ли в этой схеме какие-то допущения?
+	}
+\end{frame}
+
+\begin{frame}{Цикл взаимодействия}
+	\imagewithtext{static/images/reward_cycle.jpg}{
+		В каждый момент времени $t$:
+		\begin{itemize}
+			\item Наша среда находится в состоянии (\textbf{state}) $s_{t}$
+			\item Мы можем сделать действие (\textbf{action}) $a_{t}$
+			\item За это действие мы получаем награду (\textbf{reward}) $r_{t}$ \emred{(в зависимости от $s_{t}, a_{t}$)}
+			\item После этого игра переходит в состояние $s_{t+1}$ \emred{(в зависимости от $s_{t}, a_{t}$)}
+		\end{itemize}
+
+		Есть ли в этой схеме какие-то допущения? \textbf{Марковское свойство}.
+	}
+\end{frame}
+
+\begin{frame}{Policy}
+	<<Игроком>> в данном случае является $\pi(a_{t}|s_{t})$ (\textbf{policy}) --- насколько хорошо в данном состоянии $s_{t}$ выполнить действие $a_{t}$ (число $[0, 1]$ --- вероятность).
+	\oneimage{static/images/reward_cycle.jpg}{}{0.8\linewidth}
+\end{frame}
+
+\begin{frame}{Примеры}
+	\centering
+	\small
+	\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{4.0cm}|p{3cm}|}
+		\hline
+		\textbf{Задача}    & \textbf{Action Space} & \textbf{State Space} & \textbf{Reward} \\
+		\hline
+		Марио              &                       &                      &                 \\
+		\hline
+		Беспилотная машина &                       &                      &                 \\
+		\hline
+		Шахматы            &                       &                      &                 \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}{Примеры}
+	\centering
+	\small
+	\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{4.0cm}|p{3cm}|}
+		\hline
+		\textbf{Задача}    & \textbf{Action Space}        & \textbf{State Space}                                       & \textbf{Reward}                        \\
+		\hline
+		Марио              & Дискретные: Кнопки джойстика & Кадр экрана, позиции врагов и объектов, скорость персонажа & + за прогресс и очки, - за смерть/урон \\		\hline
+		Беспилотная машина &                              &                                                            &                                        \\
+		\hline
+		Шахматы            &                              &                                                            &                                        \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}{Примеры}
+	\centering
+	\small
+	\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{4.0cm}|p{3cm}|}
+		\hline
+		\textbf{Задача}    & \textbf{Action Space}          & \textbf{State Space}                                       & \textbf{Reward}                                           \\
+		\hline
+		Марио              & Дискретные: Кнопки джойстика   & Кадр экрана, позиции врагов и объектов, скорость персонажа & + за прогресс и очки, - за смерть/урон                    \\		\hline
+		Беспилотная машина & Непрерывные: руль, газ, тормоз & Камеры, LiDAR, скорость, разметка, положение на карте      & + за безопасный километраж, - за столкновения и нарушения \\
+		\hline
+		Шахматы            &                                &                                                            &                                                           \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}{Примеры}
+	\centering
+	\small
+	\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{4.0cm}|p{3cm}|}
+		\hline
+		\textbf{Задача}    & \textbf{Action Space}           & \textbf{State Space}                                                           & \textbf{Reward}                                               \\
+		\hline
+		Марио              & Дискретные: Кнопки джойстика    & Кадр экрана, позиции врагов и объектов, скорость персонажа                     & + за прогресс и очки, - за смерть/урон                        \\
+		\hline
+		Беспилотная машина & Непрерывные: руль, газ, тормоз  & Камеры, LiDAR, скорость, разметка, положение на карте                          & + за безопасный километраж, - за столкновения и нарушения     \\
+		\hline
+		Шахматы            & Дискретные: любой легальный ход & Позиция фигур на доске, очередь хода, спецправа (рокировка, взятие на проходе) & +1 победа, 0 ничья, -1 поражение (бонус: за количество ходов) \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+% ============================================================
+
+\section{Градиентный спуск}
+
+\sectionslide{Градиентный спуск}
+
+% ============================================================
+
+\begin{frame}{Постановка задачи}
+	\twoimages{static/images/3d_plot.png}{}{static/images/2d_plot.png}{}
+
+	\textbf{Проблема}: как найти минимум функции $\mathcal{J}(\theta)$, если мы умеем только считать её в одной точке (особенно, если считать её долго)?
+
+	\textbf{Вопрос}: что показывает производная в точке?
+\end{frame}
+
+\begin{frame}{Градиентный спуск}
+	\imagewithtext{static/images/grad_descent.jpg}{
+		Заметим, что направление, в котором функция убывает быстрее всего --- это $-\mathcal{J}'$ (далее будем писать $-\nabla_{\theta}\mathcal{J}$).
+
+		\\ [0.5em]
+
+		Тогда выберем случайную точку $\theta^{(0)}$ и будем обновлять её
+		$$
+			\theta^{(k+1)} = \theta^{(k)} - \alpha \nabla _{\theta} \mathcal{J} (\theta^{(k)})
+		$$
+		, где $\alpha > 0$ --- скорость спуска (\textbf{learning rate}).
+	}
+\end{frame}
+
+\begin{frame}{Проблемы}
+	\twoimages{static/images/problem1.png}{Оседание в локальном минимуме}{static/images/problem2.png}{Расходимость или медленная сходимость}
+\end{frame}
+
+% ============================================================
+
+\section{REINFORCE}
+
+\sectionslide{REINFORCE}
+
+% ============================================================
+
+\begin{frame}{Policy-based}
+	Пусть $\pi_{\theta}$ --- какая-то \textit{модель машинного обучения} с параметрами $\theta$, которая по состоянию $s_{t}$ выдаёт вероятности действия $\pi_{\theta}(a_{t} | s_{t})$.
+\end{frame}
+
+\begin{frame}{Что оцениваем}
+	\imagewithtext{static/images/discounting.png}{
+		Пусть мы сыграли один раз, получив \textit{траекторию} $\tau = (s_{t}, r_{t}, a_{t})_{t\geqslant 0}$. Оценим её так:
+
+		$$
+			R(\tau) = \sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+		$$
+		, где $\gamma \in[0, 1]$ --- коэффициент дисконтирования (\textbf{discounting}).
+	}
+\end{frame}
+
+\begin{frame}{Exploration vs. Exploitation}
+	\oneimage{static/images/exploration.jpg}{Какая стратегия здесь оптимальна?}{0.7\linewidth}
+\end{frame}
+
+\begin{frame}{Что оцениваем}
+	\imagewithtext{static/images/discounting.png}{
+		Пусть мы сыграли один раз, получив \textit{траекторию} $\tau = (s_{t}, r_{t}, a_{t})_{t\geqslant 0}$. Оценим её так:
+
+		$$
+			R(\tau) = \sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+		$$
+		, где $\gamma \in[0, 1]$ --- коэффициент дисконтирования (\textbf{discounting}).
+	}
+
+	\\ [0.5em]
+
+	\textit{Тогда как оценить <<успешность>> нашей $\pi_{\theta}$?}
+\end{frame}
+
+\begin{frame}{Что оцениваем}
+	\imagewithtext{static/images/discounting.png}{
+		Пусть мы сыграли один раз, получив \textit{траекторию} $\tau = (s_{t}, r_{t}, a_{t})_{t\geqslant 0}$. Оценим её так:
+
+		$$
+			\hlred{\mathcal J(\theta)} = \hlred{\mathbb E_{\tau \sim \pi_{\theta}}} [R(\tau)] = \hlred{\mathbb E_{\tau \sim \pi_{\theta}}}\sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+		$$
+		, где $\gamma \in[0, 1]$ --- коэффициент дисконтирования (\textbf{discounting}).
+	}
+
+	\\ [0.5em]
+
+	\textit{Тогда как оценить <<успешность>> нашей $\pi_{\theta}$?}
+
+\end{frame}
+
+\begin{frame}{Градиентный спуск}
+	\imagewithtext{static/images/meme01.png}{
+		Мы хотим максимизировать $\mathcal{J}(\theta)$ по всем $\theta$. Можем использовать \textit{град. подъем} для этого. Но тогда нужно уметь считать $\nabla_{\theta} \mathcal{J}$.
+
+		$$
+			\mathcal{J}(\theta) = \mathbb{E} _{\tau \sim \pi_{\theta}} [R(\tau)] = \sum_{\tau} \mathbb{P}(\tau)\cdot R(\tau)
+		$$
+
+		Однако считать $\mathbb P(\tau)$ может быть сложно считать. \textit{Что делать?}
+	}
+\end{frame}
+
+\begin{frame}{Градиентный спуск}
+	\imagewithtext{static/images/meme02.jpg}{
+		Мы хотим максимизировать $\mathcal{J}(\theta)$ по всем $\theta$. Можем использовать \textit{град. подъем} для этого. Но тогда нужно уметь считать $\nabla_{\theta} \mathcal{J}$.
+
+		$$
+			\mathcal{J}(\theta) = \mathbb{E} _{\tau \sim \pi_{\theta}} [R(\tau)] = \sum_{\tau} \mathbb{P}(\tau)\cdot R(\tau)
+		$$
+
+		Однако считать $\mathbb P(\tau)$ может быть сложно считать. \textit{Что делать?}
+
+		\begin{block}{Policy Gradient Theorem}
+			$
+				\nabla_{\theta} \mathcal{J} = \mathbb E_{\pi_{\theta}} [\nabla _{\theta} \log \pi_{\theta}(a_{t}|s_{t})\cdot R(\tau)]
+			$
+		\end{block}
+
+	}
+\end{frame}
+
+\begin{frame}{REINFORCE}
+	Алгоритм \textbf{REINFORCE} (или Monte-Carlo Reinforce):
+	\begin{enumerate}
+		\item Запустить $N$ проходов для нашей $\pi _{\theta ^{(k)}}$
+		\item Для каждой из получившихся траекторий $\tau_{j}$ посчитать $\hat{g}_{j} = \sum\limits_{t} \nabla_{\theta }\log \pi_{\theta ^{(k)}}(a_{t}|s_{t})\cdot R(\tau)$
+		\item Тогда посчитаем $\nabla_{\theta}J(\theta ^{(k)}) = \frac{1}{N} \sum\limits_{j=1}^N \hat{g}_{j}$
+		\item Обновляем полиси $\theta ^{(k+1)} = \theta ^{(k)} + \alpha \nabla_{\theta}J(\theta ^{(k)})$
+	\end{enumerate}
+
+	Минусов нет. \textit{Кроме...}
+\end{frame}
+
+\begin{frame}{Недостатки REINFORCE}
+	\begin{enumerate}
+		\item Нужно делать полный проход много раз
+		\item Мы полностью теряем информацию между $\theta ^{(k)}\to \theta ^{(k+1)}$
+		\item Если мы случайно пойдём не в том направлении, то мы испортим себе входные данные.
+	\end{enumerate}
+\end{frame}
+
+% ============================================================
+
+\section{Actor-Critic}
+
+\sectionslide{Actor-Critic}
+
+% ============================================================
+
+\begin{frame}{Value function}
+	\textbf{Проблема}: $R(\tau)$ оценивает не только успешность нашей полиси, но и насколько удачны состояния, которые он посещает.
+
+	$$
+		V^\pi (s) = \mathbb E _{\pi}[r_{1} + \gamma r_{2}+\gamma ^{2} r_{3}+\dots | s_0 = s]
+	$$
+
+	, то есть эта функция показывает, насколько удачно для нашей полиси $\pi$ состояние $s$.
+\end{frame}
+
+\begin{frame}{Critic model}
+	\imagewithtext{static/images/a2c.png}{
+		Давайте вместе со стратегией $\pi_{\theta}$ обучать ещё и $V_{\varphi}$ (то есть научимся понимать, насколько хороший reward мы умеем получать из такого состояния).
+
+		\\ [0.5em]
+
+		\textit{Как теперь хочется изменить функцию $R(\tau)$?}
+	}
+\end{frame}
+
+\begin{frame}{Critic model}
+	\imagewithtext{static/images/a2c.png}{
+		Давайте вместе со стратегией $\pi_{\theta}$ обучать ещё и $V_{\varphi}$ (то есть научимся понимать, насколько хороший reward мы умеем получать из такого состояния).
+
+		\\ [0.5em]
+
+		\textit{Как теперь хочется изменить функцию $R(\tau)$?}
+
+		Введем функцию \textbf{advantage} (преимущества):
+		$$
+			\begin{aligned}
+				A_{t}(\tau) & = \hlred{R(\tau)} - V_{\varphi}(s_{t})                              \\
+				A_{t}(\tau) & = \hlred{(r_{t} +\gamma V_{\varphi}(s_{t+1}))} - V_{\varphi}(s_{t})
+			\end{aligned}
+		$$
+	}
+\end{frame}
+
+\begin{frame}{Advantage Actor Critic}
+	\imagewithtext{static/images/meme03.jpg}{
+		\textbf{Плюсы}
+		\begin{enumerate}
+			\item Более точно измеряем качество полиси
+			\item Сохраняем информацию для $V_{\varphi}$
+			\item Можно не прогонять модель до конца
+		\end{enumerate}
+
+		\textbf{Минусы}
+		\begin{enumerate}
+			\item Высокая чувствительность к \textit{learning rate}
+			\item Теряем информацию для $\pi_{\theta}$
+		\end{enumerate}
+	}
+\end{frame}
+
+% ============================================================
+
+\section{Proximal Policy Optimization}
+
+\sectionslide{Proximal Policy Optimization}
+
+% ============================================================
+
+\begin{frame}{Проблематика}
+	$$
+		\nabla_{\theta} \mathcal{J} = \mathbb{E}[\nabla _{\theta}\log \pi_{\theta}(a_{t}|s_{t})\cdot A_{t}]
+	$$
+
+	\textit{Что происходит, если мы делаем большой шаг? А если маленький?}
+
+\end{frame}
+
+\begin{frame}{Проблематика}
+	$$
+		\nabla_{\theta} \mathcal{J} = \mathbb{E}[\nabla _{\theta}\log \pi_{\theta}(a_{t}|s_{t})\cdot A_{t}]
+	$$
+
+	\textit{Что происходит, если мы делаем большой шаг? А если маленький?}
+
+	\twoimages{static/images/problem2.png}{}{static/images/cliff.jpg}{}
+
+\end{frame}
+
+\begin{frame}{Importance Sampling}
+	А что если использовать данные от \textbf{старой} политики $\pi_{\theta_k}$, чтобы оценить новую $\pi_\theta$?
+
+	\\ [0.5em]
+
+	Каждое действие нужно взвесить: насколько новая политика отличается от старой в этой точке:
+
+	$$
+		r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_k}(a_t|s_t)}
+	$$
+
+	\begin{itemize}
+		\item $r_t > 1$ --- новая политика делает это действие \textit{чаще}
+		\item $r_t < 1$ --- новая политика делает это действие \textit{реже}
+		\item $r_t = 1$ --- политики совпадают в этой точке
+	\end{itemize}
+
+	Тогда будем оптимизировать:
+	$$
+		\mathcal{L}(\theta) = \mathbb{E}\left[r_t(\theta) \cdot A_t\right]
+	$$
+\end{frame}
+
+\begin{frame}{Importance Sampling}
+	\imagewithtext{static/images/meme01.png}{
+		\textbf{Проблема}: без ограничений $r_t(\theta)$ может стать очень большим.
+
+		\\ [0.5em]
+
+		Если действие оказалось удачным ($A_t > 0$) --- алгоритм захочет резко увеличить его вероятность, $r_t \gg 1$.
+
+		\\ [0.5em]
+
+		Снова получаем большой шаг. \textit{Что делать?}
+	}
+\end{frame}
+
+\begin{frame}{PPO-Clip}
+	Идея PPO: просто \textbf{обрежем} $r_t(\theta)$ --- не дадим ему уходить далеко от $1$:
+
+	$$
+		\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}\left[\min\!\left(r_t(\theta)\cdot A_t,\;\operatorname{clip}\!\left(r_t(\theta),\, 1{-}\varepsilon,\, 1{+}\varepsilon\right)\cdot A_t\right)\right]
+	$$
+
+	где $\varepsilon$ --- гиперпараметр (обычно $0.1$--$0.2$).
+
+	\\ [0.5em]
+
+	Разберём два случая:
+
+	\begin{itemize}
+		\item $A_t > 0$: действие хорошее, хотим увеличить $r_t$. Если $r_t > 1+\varepsilon$ --- $\min$ выбирает clip, градиент \textbf{обнуляется}.
+		\item $A_t < 0$: действие плохое, хотим уменьшить $r_t$. Если $r_t < 1-\varepsilon$ --- снова clip, обновления \textbf{нет}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{PPO-Clip: график}
+	\oneimage{static/images/clip.png}{}{0.75\linewidth}
+
+	\textbf{Вывод}: PPO никогда не вознаграждает политику за то, что она слишком сильно отклонилась от предыдущей --- ни в хорошую, ни в плохую сторону.
+\end{frame}
+
+\begin{frame}{Алгоритм PPO}
+	\begin{enumerate}
+		\item Собрать $N$ траекторий с текущей политикой $\pi_{\theta^{(k)}}$
+		\item Посчитать advantage $A_t$ для каждого шага
+		\item Несколько раз обновить $\theta, \varphi$ по одним и тем же данным:
+		      $$
+			      \theta \leftarrow \theta + \alpha \nabla_\theta \mathcal{L}^{\text{CLIP}}(\theta)
+		      $$
+		\item Повторить
+	\end{enumerate}
+
+	\\ [0.5em]
+
+	Ключевое отличие от REINFORCE/A2C: шаг 3 --- мы используем одни данные \textbf{несколько раз}, пока clip не начинает срабатывать слишком часто.
+\end{frame}
+
+% ============================================================
+
+\section{Пример}
+
+\sectionslide{Пример}
+
+% ============================================================
+
+% \begin{frame}{Применение в статье}
+% 	\imagewithtext{static/images/reward_cycle.jpg}{
+% 		В статье:
+% 		\begin{itemize}
+% 			\item $\varepsilon = 0.2$ (стандартное значение)
+% 			\item 320 эпизодов на итерацию, 100 итераций
+% 			\item Без clip политика расходилась бы на ранних итерациях, когда $A_t$ оценивается шумно
+% 		\end{itemize}
+
+% 		\\ [0.5em]
+
+% 		PSO-MADS тратит 10\,000 симуляций на \textit{одно} решение. PPO за те же вычисления получает \textbf{политику} --- функцию, которая работает при любом состоянии пласта.
+% 	}
+% \end{frame}
+
+\begin{frame}{Постановка задачи}
+	\imagewithtext{static/images/meme04.jpg}{
+		\textbf{Дано}: подземный нефтяной пласт. Нужно решить:
+		\begin{itemize}
+			\item Сколько скважин бурить?
+			\item Какого типа --- добывающие или нагнетательные?
+			\item \textit{Где} бурить?
+			\item В каком \textit{порядке}?
+		\end{itemize}
+
+		\\ [0.5em]
+
+		\textbf{Цель}: максимизировать суммарную прибыль с учётом затрат и дисконтирования.
+	}
+\end{frame}
+
+\begin{frame}{Почему это сложно}
+	\begin{itemize}
+		\item Решения \textbf{взаимозависимы}: скважина здесь меняет давление там
+		\item Решения \textbf{последовательны}: каждый этап бурения зависит от предыдущих
+		\item Среда \textbf{дорогая}: одна симуляция пласта --- часы вычислений
+		\item Пространство решений \textbf{огромное}: $60 \times 60$ сетка, 5 этапов бурения
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Формализация как MDP}
+	\centering
+	\small
+	\begin{tabular}{|p{2.5cm}|p{9cm}|}
+		\hline
+		\textbf{Компонент}    & \textbf{В задаче}                                                                                         \\
+		\hline
+		\textbf{State} $s_t$  & 4 карты $60{\times}60$ (проницаемость, давление, насыщенность, скважины) + номер этапа + счётчики скважин \\
+		\hline
+		\textbf{Action} $a_t$ & (1) бурить/нет и тип скважины; (2) если бурить --- клетка на сетке                                        \\
+		\hline
+		\textbf{Reward} $r_t$ & прирост NPV на данном этапе бурения                                                                       \\
+		\hline
+		\textbf{Episode}      & 5 этапов бурения $\to$ терминальное состояние                                                             \\
+		\hline
+		\textbf{Policy} $\pi$ & нейросеть: карты $\to$ решение о бурении                                                                  \\
+		\hline
+	\end{tabular}
+\end{frame}
+
+\begin{frame}{Состояние: 4 карты пласта}
+	\oneimage{static/images/map.png}{}{0.7\linewidth}{}
+\end{frame}
+
+\begin{frame}{Почему CNN?}
+	\imagewithtext{static/images/cnn.png}{
+		Состояние агента --- это \textbf{4 карты}, то есть пространственные данные.
+
+		\\ [0.5em]
+
+		\textbf{Сверточная нейросеть} (CNN) умеет находить \textit{локальные паттерны} на картах: где высокая проницаемость рядом с уже пробуренной скважиной?
+
+		\\ [0.5em]
+
+		Обычная нейросеть «не знает», что соседние клетки связаны. CNN --- знает.
+	}
+\end{frame}
+
+% \begin{frame}{Результаты: агент учится}
+% 	\oneimage{static/images/fig3_reward.png}{Средняя накопленная награда по итерациям}{0.75\linewidth}
+
+% 	Агент стабильно улучшается. Большая сеть достигает большего NPV, малая сходится быстрее.
+% \end{frame}
+
+\begin{frame}{Результаты: решения агента}
+	\twoimages{static/images/result01.png}{Малая сеть: \$249.8 млн}{static/images/result02.png}{Большая сеть: \$271.9 млн}
+\end{frame}
+
+\begin{frame}{Сравнение с классическим методом}
+	\centering
+	\begin{tabular}{|p{3.5cm}|p{3cm}|p{3cm}|p{2.5cm}|}
+		\hline
+		\textbf{Метод} & \textbf{NPV} & \textbf{Скважин} & \textbf{Результат} \\
+		\hline
+		PSO-MADS       & \$272.1 млн  & 5                & одно решение       \\
+		\hline
+		PPO (малая)    & \$249.8 млн  & 4                & политика           \\
+		\hline
+		PPO (большая)  & \$271.9 млн  & 4                & политика           \\
+		\hline
+	\end{tabular}
+
+	\\ [1em]
+
+	PSO-MADS тратит 10\,000 симуляций на \textbf{одно} решение для \textbf{одного} пласта.
+
+	PPO получает \textbf{политику} --- функцию, которая работает при любом состоянии.
+\end{frame}
+
+% \begin{frame}{Обобщаемость политики}
+% 	\imagewithtext{static/images/fig5_generalization.png}{
+% 		\textbf{Эксперимент}: принудительно сделать первое действие не таким, как рекомендует политика.
+
+% 		\\ [0.5em]
+
+% 		Политика \textbf{адаптировалась}: скорректировала последующие решения и получила \$269 млн.
+
+% 		\\ [0.5em]
+
+% 		PSO-MADS в этой ситуации запустился бы заново с нуля.
+
+% 		\\ [0.5em]
+
+% 		\textit{Это и есть главное преимущество RL над классической оптимизацией.}
+% 	}
+% \end{frame}
+
+% ── FINAL SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\finalslide{\ContactURL}{\FeedbackURL}
+\end{frame}
+
+\end{document}
