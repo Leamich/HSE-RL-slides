@@ -1,0 +1,615 @@
+% ============================================================
+%  HSE University — Beamer Presentation Template
+%  Resolution  : 1920 × 1080  (aspectratio=169)
+%  Compiler    : pdfLaTeX  (Overleaf)
+%  Theme file  : hse.sty  (must be in the same folder)
+% ============================================================
+\documentclass[aspectratio=169,12pt,t,compress]{beamer}
+
+% ── Russian language support ─────────────────────────────────
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+
+\usepackage{booktabs}
+
+\usepackage{amsmath, amssymb, amsthm} % Чтобы юзать математические символы
+
+% ============================================================
+%  PRESENTATION METADATA — fill in before use
+% ============================================================
+\newcommand{\EventName}{Хакатон ИТМО}
+\newcommand{\EventLocation}{Санкт-Петербург}
+\newcommand{\PresentationTitle}{Обучение с подкреплением}
+\newcommand{\PresentationSubtitle}{Актуальные подходы и проблемы}
+\newcommand{\AuthorName}{Леонтьев Михаил}
+\newcommand{\AuthorRole}{ML-researcher}
+\newcommand{\AuthorAffiliation}{НИУ ВШЭ, X5 Tech}
+\newcommand{\PresentationDate}{24 мая 2026}
+
+% ── HSE theme ────────────────────────────────────────────────
+\usepackage{static/itmo}
+
+\setbeamertemplate{headline}[itmo theme]
+\setbeamertemplate{frametitle}[itmo theme]
+\setbeamertemplate{footline}[itmo theme]
+
+% ── Override localisation macros (now UTF-8 is active) ───────
+\renewcommand{\LogoPlaceholderText}{ITMO Logo}
+\renewcommand{\ThankYouText}{Спасибо за внимание!}
+\renewcommand{\ContactsText}{Telegram}
+\renewcommand{\FeedbackText}{Фидбек+материалы}
+
+% ── Additional packages ───────────────────────────────────────
+\usepackage{qrcode}   % QR codes on the final slide
+
+% Text shown in the footer (left side)
+% \renewcommand{\FooterLeft}{\AuthorName\ \textbullet\ \AuthorAffiliation}
+
+% URLs for the final slide QR codes
+\newcommand{\ContactURL}{https://t.me/michlea\_tg}
+\newcommand{\FeedbackURL}{https://forms.gle/isNG7V2e6QWKTGTW8}
+% ============================================================
+\begin{document}
+
+% ── TITLE SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\titlepage
+\end{frame}
+
+% ── TABLE OF CONTENTS ────────────────────────────────────────
+% [nonavbar] keeps this slide out of the nav-bar dots
+\begin{frame}{Содержание}
+	\tableofcontents
+\end{frame}
+
+% ============================================================
+
+\section{Введение в RL}
+\sectionslide{Введение в RL}
+
+% ============================================================
+
+\begin{frame}{Обучение с подкреплением}
+	% \imagewithtext{файл}{содержимое правой колонки}
+	\imagewithtext{static/images/mario.jpg}{%
+		Представьте, что вам нужно научиться (=написать алгоритм) для игры в Марио. У вас есть: приставка с этой игрой и~В~С~Ё.
+
+		\hspace{1em}
+
+		Как быть?
+	}
+\end{frame}
+
+\begin{frame}{Цикл взаимодействия}
+	\imagewithtext{static/images/reward_cycle.jpg}{
+		В каждый момент времени $t$:
+		\begin{itemize}
+			\item<1-> Наша среда находится в состоянии (\textbf{state}) $s_{t}$
+			\item<2-> Мы можем сделать действие (\textbf{action}) $a_{t}$
+			\item<3-> За это действие мы получаем награду (\textbf{reward}) $r_{t}$ (в зависимости \alt<6->{\emred{только}}{только} от $s_{t}, a_{t}$)
+			\item<4-> После этого игра переходит в состояние $s_{t+1}$ (в зависимости \alt<6->{\emred{только}}{только} от $s_{t}, a_{t}$)
+		\end{itemize}
+		\onslide<5->{Есть ли в этой схеме какие-то допущения?} \onslide<6->{\emred{Марковское свойство}}
+	}
+\end{frame}
+
+\begin{frame}{Policy}
+	<<Игроком>> в данном случае является $\pi(a_{t}|s_{t})$ (\textbf{policy}) --- вероятностное распределение действий $a_{t}$.
+	\oneimage{static/images/reward_cycle.jpg}{}{0.8\linewidth}
+\end{frame}
+
+% ============================================================
+
+\section{Policy Gradient & Critic}
+
+\sectionslide{Policy Gradient and Critic}
+
+% ============================================================
+
+\begin{frame}{Policy-based}
+	Пусть $\pi_{\theta}$ --- какая-то \textit{модель машинного обучения} с параметрами $\theta$, которая по состоянию $s_{t}$ выдаёт вероятности действия $\pi_{\theta}(a_{t} | s_{t})$.
+\end{frame}
+
+\begin{frame}{Что оцениваем}
+	\imagewithtext{static/images/discounting.png}{
+		Пусть мы сыграли один раз, получив \textit{траекторию} $\tau = (s_{t}, r_{t}, a_{t})_{t\geqslant 0}$. Оценим её так:
+
+		$$
+			R(\tau) = \sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+		$$
+		, где $\gamma \in[0, 1]$ --- коэффициент дисконтирования (\textbf{discounting}).
+	}
+\end{frame}
+
+\begin{frame}{Exploration vs. Exploitation}
+	\oneimage{static/images/exploration.jpg}{Какая стратегия здесь оптимальна?}{0.7\linewidth}
+\end{frame}
+
+\begin{frame}{Что оцениваем}
+	\imagewithtext{static/images/discounting.png}{
+		Пусть мы сыграли один раз, получив \textit{траекторию} $\tau = (s_{t}, r_{t}, a_{t})_{t\geqslant 0}$. Оценим её так:
+
+		\only<1>{
+				$$
+					R(\tau) = \sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+				$$}
+
+		\only<2>{
+				$$
+					\hlred{\mathcal J(\theta)} = \hlred{\mathbb E_{\tau \sim \pi_{\theta}}} [R(\tau)] = \hlred{\mathbb E_{\tau \sim \pi_{\theta}}}\sum\limits_{t=0}^{+\infty} \gamma^t r_{t}
+				$$}
+		, где $\gamma \in[0, 1]$ --- коэффициент дисконтирования (\textbf{discounting}).
+	}
+
+	\\ [0.5em]
+
+	\textit{Тогда как оценить <<успешность>> нашей $\pi_{\theta}$?}
+
+\end{frame}
+
+\begin{frame}{Loss Function}
+	\imagewithtext{static/images/meme02.jpg}{
+		Мы хотим максимизировать $\mathcal{J}(\theta)$ по всем $\theta$. Можем использовать \textit{град. подъем} для этого. Но тогда нужно уметь считать $\nabla_{\theta} \mathcal{J}$.
+
+		$$
+			\mathcal{J}(\theta) = \mathbb{E} _{\tau \sim \pi_{\theta}} [R(\tau)] = \sum_{\tau} \mathbb{P}(\tau)\cdot R(\tau)
+		$$
+
+		Однако считать $\mathbb P(\tau)$ может быть сложно считать. \textit{Что делать?}
+
+		\onslide<2->{
+				\begin{block}{Policy Gradient Theorem}
+					$
+						\nabla_{\theta} \mathcal{J} = \mathbb E_{\tau \sim \pi_{\theta}} \left[\sum\limits_{t=1}^{|\tau|}\nabla _{\theta} \log \pi_{\theta}(a_{t}|s_{t})\cdot R(\tau)\right]
+					$
+				\end{block}}
+	}
+\end{frame}
+
+\begin{frame}{Policy Gradient Theorem: доказательство}
+	\begin{block}{Policy Gradient Theorem}
+		$
+			\nabla_{\theta} \mathcal{J} = \mathbb E_{\tau \sim \pi_{\theta}} \left[\sum\limits_{t=1}^{|\tau|}\nabla _{\theta} \log \pi_{\theta}(a_{t}|s_{t})\cdot R(\tau)\right]
+		$
+	\end{block}
+
+	$$
+		\begin{gathered}
+			\nabla_{\theta} \mathcal{J} = \onslide<2->{\nabla_{\theta} \sum\limits_{\tau} \mathbb P (\tau| \theta) R(\tau)} \onslide<3->{= \sum\limits _{\tau} R(\tau) \nabla _{\theta} \mathbb P(\tau|\theta)} \onslide<4->{= \sum\limits _{\tau} R(\tau) \mathbb P(\tau|\theta)\only<5->{\underbrace}{\frac{\nabla _{\theta} \mathbb P(\tau|\theta)}{\mathbb P(\tau|\theta)}}\only<5->{_{\nabla _{\theta} \log \mathbb P(\tau | \theta)}}}
+		\end{gathered}
+	$$
+
+	\onslide<6->{Итого, $\nabla_{\theta} \mathcal{J} = \mathbb E_{\pi_{\theta}} [\nabla _{\theta} \log \mathbb P(\tau|\theta) \cdot R(\tau)]$. Также заметим, что}
+	$$
+		\onslide<6->{\nabla _{\theta} \log \mathbb P(\tau|\theta) =} \onslide<7->{\nabla _{\theta} \log \mathbb P(s_{0})\prod\limits_{t=1}^{|\tau|} \mathbb P(s_{t+1}|s_{t},a_{t})\pi_{\theta}(a_{t}|s_{t})}\onslide<8->{=\sum\limits_{t=1}^{|\tau|}\nabla _{\theta} \log \pi_{\theta}(a_{t}|s_{t})}
+	$$
+
+\end{frame}
+
+\begin{frame}{REINFORCE}
+	Алгоритм \textbf{REINFORCE} (или Monte-Carlo Reinforce):
+	\begin{enumerate}
+		\item<1-> Запустить $N$ проходов для нашей $\pi _{\theta ^{(k)}}$
+		\item<2-> Для каждой из получившихся траекторий $\tau_{j}$ посчитать $\hat{g}_{j} = \sum\limits_{t=1}^{|\tau_{j}|} \nabla_{\theta }\log \pi_{\theta ^{(k)}}(a_{t}^{(j)}|s_{t}^{(j)})\cdot R(\tau_{j})$
+		\item<3-> Тогда посчитаем $\nabla_{\theta}J(\theta ^{(k)}) = \frac{1}{N} \sum\limits_{j=1}^N \hat{g}_{j}$
+		\item<4-> Обновляем полиси $\theta ^{(k+1)} = \theta ^{(k)} + \alpha \nabla_{\theta}J(\theta ^{(k)})$
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Value function}
+	\textbf{Проблема}: $R(\tau)$ оценивает не только успешность нашей полиси, но и насколько удачны состояния, которые он посещает.
+
+	\onslide<2->{
+			$$
+				V^\pi (s) = \mathbb E _{\pi}[\underbrace{r_{1} + \gamma r_{2}+\gamma ^{2} r_{3}+\dots}_{R(\tau)} | s_0 = s]
+			$$
+
+			, то есть эта функция показывает, насколько удачно для нашей полиси $\pi$ состояние $s$.}
+\end{frame}
+
+\begin{frame}{Critic model}
+	\imagewithtext{static/images/a2c.png}{
+		Давайте вместе со стратегией $\pi_{\theta}$ обучать ещё и $V_{\varphi}$ (то есть научимся понимать, насколько хороший reward мы умеем получать из такого состояния). \onslide<2->{\textit{Как теперь можно улучшить подсчёт reward?}}
+
+		\\ [0.5em]
+
+		\onslide<3->{
+				Введем функцию \textbf{advantage} (преимущества):
+				$$
+					A_{t}(\tau) = {R_{t}(\tau)} - V_{\varphi}(s_{t})
+				$$}
+
+		\onslide<4->{Но нам уже не хочется считать $R_{t}(\tau)$. \textit{Что делать?}}
+	}
+\end{frame}
+
+\begin{frame}{Generalized Advantage Estimation (GAE)}
+	Заметим, что
+	$$
+		R_{t}(\tau) = r_{t} + \gamma \undebrace{R_{t+1}(\tau)}_{V_{\varphi}(s_{t+1})}
+	$$
+
+	\onslide<2->{
+			Тогда обозначим $\hlred{\delta_{t}:= r_{t}+\gamma V_{\varphi}(s_{t+1})-V_{\varphi}(s_{t})}$ --- получили оценку на $A_{t}$.}
+
+	\onslide<3->{
+			Расширим эту идею: пусть имеем гиперпараметр $\lambda \in [0, 1]$. Тогда
+			$$
+				\hat A_{t} := \sum\limits_{k=0}^{|\tau|} (\gamma\lambda)^k \delta_{t+k}
+			$$
+
+			Что будет, если $\lambda = 0$? $\lambda = 1$? $\lambda \in (0, 1)$? \onslide<6->{(обычно берут $\lambda\approx 0.95$)}}
+	$$
+		\begin{aligned}
+			\onslide<4->{
+					           \lambda=0:\quad  & \hat A_{t} = \delta_{t} = r_{t}+\gamma V_{\varphi}(s_{t+1}) - V_{\varphi}(s_{t})               \\}
+			\onslide<5->{
+					           \lambda =1:\quad & \hat A_{t} = \sum\limits_{k=0}^{|\tau|} \gamma^k \delta_{t+k}=R_{t}(\tau) - V_{\varphi}(s_{t})}
+		\end{aligned}
+	$$
+\end{frame}
+
+% ============================================================
+
+\section{Proximal Policy Optimization}
+
+\sectionslide{Proximal Policy Optimization}
+
+% ============================================================
+
+% \begin{frame}{Проблематика}
+% 	$$
+% 		\nabla_{\theta} \mathcal{J} = \mathbb{E}[\nabla _{\theta}\log \pi_{\theta}(a_{t}|s_{t})\cdot A_{t}]
+% 	$$
+
+% 	\textit{Что происходит, если мы делаем большой шаг? А если маленький?}
+
+% \end{frame}
+
+% \begin{frame}{Проблематика}
+% 	$$
+% 		\nabla_{\theta} \mathcal{J} = \mathbb{E}[\nabla _{\theta}\log \pi_{\theta}(a_{t}|s_{t})\cdot \hat A_{t}]
+% 	$$
+
+% 	\textit{Что происходит, если мы делаем большой шаг? А если маленький?}
+
+% 	\twoimages{static/images/problem2.png}{}{static/images/cliff.jpg}{}
+
+% \end{frame}
+
+\begin{frame}{Ratio Function}
+	А что если использовать данные от \textbf{старой} политики $\pi_{\theta^{(k)}}$, чтобы оценить новую $\pi_{\theta}$?
+
+	\onslide<2->{
+			$$
+				r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta^{(k)}}(a_t|s_t)}
+			$$}
+
+	\begin{itemize}
+		\item<3-> $r_t > 1$ --- новая политика делает это действие \textit{чаще}
+		\item<4-> $r_t < 1$ --- новая политика делает это действие \textit{реже}
+		\item<5-> $r_t = 1$ --- политики совпадают в этой точке
+	\end{itemize}
+
+	\onslide<6->{
+			Тогда будем оптимизировать:
+			$$
+				\mathcal{L}^{CPI}(\theta) = \mathbb{E}\left[r_t(\theta) \cdot \hat A_t\right]
+			$$}
+\end{frame}
+
+\begin{frame}{Ratio Function}
+	\imagewithtext{static/images/meme01.png}{
+		\textbf{Проблема}: без ограничений $r_t(\theta)$ может стать очень большим.
+
+		\\ [0.5em]
+
+		\onslide<2->{Если действие оказалось удачным ($\hat A_t > 0$) --- алгоритм захочет резко увеличить его вероятность, $r_t \gg 1$.}
+
+		\\ [0.5em]
+
+		\onslide<2->{Получаем слишком большой шаг. }\onslide<3->{\textit{Что делать?}}
+	}
+\end{frame}
+
+\begin{frame}{PPO-Clip}
+	Идея PPO: просто \textbf{обрежем} $r_t(\theta)$ --- не дадим ему уходить далеко от $1$:
+
+	$$
+		\mathcal{L}^{\text{CLIP}}(\theta) = \mathbb{E}\left[\min\!\left\{r_t(\theta)\cdot \hat A_t,\;\operatorname{clip}\!\left(r_t(\theta);\, 1{-}\varepsilon,\, 1{+}\varepsilon\right)\cdot \hat A_t\right\}\right]
+	$$
+
+	где $\varepsilon$ --- гиперпараметр (обычно $0.1$--$0.2$).
+
+	\\ [0.5em]
+
+	\onslide<2->{
+			Разберём два случая:
+
+			\begin{itemize}
+				\item $A_t > 0$: действие хорошее, хотим увеличить $r_t$. Если $r_t > 1+\varepsilon$ --- $\min$ выбирает clip, градиент \textbf{обнуляется}.
+				\item<3-> $A_t < 0$: действие плохое, хотим уменьшить $r_t$. Если $r_t < 1-\varepsilon$ --- снова clip, обновления \textbf{нет}.
+			\end{itemize}}
+\end{frame}
+
+\begin{frame}{PPO-Clip: график}
+	\oneimage{static/images/clip.png}{}{0.75\linewidth}
+
+	\textbf{Вывод}: PPO никогда не вознаграждает политику за то, что она слишком сильно отклонилась от предыдущей --- ни в хорошую, ни в плохую сторону.
+\end{frame}
+
+\begin{frame}{Алгоритм PPO}
+	\begin{enumerate}
+		\item Собрать $N$ траекторий с текущей политикой $\pi_{\theta^{(k)}}$
+		\item<2-> Посчитать $\delta_t, \hat A_{t}$ для каждого шага
+		\item<3-> Несколько раз обновить $\theta, \varphi$ по одним и тем же данным:
+		      $$
+			      \begin{gathered}
+				      \theta \leftarrow \theta + \alpha_{\theta} \nabla_\theta \mathcal{L}^{\text{CLIP}}(\theta)\\
+				      \varphi \leftarrow \varphi - \alpha_{\varphi} \nabla_\varphi \mathcal{L}^{MSE}(\varphi)
+			      \end{gathered}
+		      $$
+	\end{enumerate}
+\end{frame}
+
+% ============================================================
+
+\section{RLHF}
+
+\sectionslide{RLHF (RL from Human Feedback)}
+
+% ============================================================
+
+\begin{frame}{LLM Post-Train}
+	\begin{enumerate}
+		\item \textbf{Pretrain}. LLM обучается на задачу Next Token Prediction на большом корпусе текстов. \textit{Но как сделать из такой модель helpful assistant?}
+		\item<2-> \textbf{SFT}. LLM дообучается на парах (запрос, ответ) и учится отвечать на вопросы (а также запоминает формат ответов). \textit{Но как заставить модель отвечать более <<корректно>>?}
+		\item<3-> \textbf{RLHF}. Обучаем модель на предпочтения пользователей. \textit{Как?}
+	\end{enumerate}
+
+	\onslide<3->{\oneimage{static/images/finetune_llm_scheme.jpg}{}{0.65\linewidth}}
+\end{frame}
+
+\begin{frame}{Постановка задачи}
+	Итак, у нас есть предобученная модель $\pi^{SFT}$ и датасет предпочтений (prompt, accepted\_answer, rejected\_answer).
+
+	\begin{enumerate}
+		\item \textbf{State}. \onslide<2->{Промпт + написанная часть ответа.}
+		\item<2-> \textbf{Action}. \onslide<3->{Очередной токен.}
+		\item<3-> \textbf{Reward}. \onslide<4->{Reward model.} \onslide<6-11>{\textit{Как обучить?}}
+		\item<4-> \textbf{Policy}. \onslide<5->{Наша LLM $\pi_{\theta}$}
+	\end{enumerate}
+
+	\\[0.5em]
+
+	\only<7-11>{
+			\onslide<7->{Пусть $RM_{\psi}(x, y)$ --- модель регрессии (чем больше число --- тем лучше $y$).}
+			\onslide<8->{$\mathbb P(y_{1} \succ y_{2}|x) = \onslide<9->{\sigma(RM_{\psi}(x, y_{1})-RM_{\psi}(x, y_{2}))}$ --- вероятность предпочтения.} \onslide<10->{\emred{Такой подход называется Bradley-Terry Framework}.} \onslide<11->{(для $RM_{\psi}$ можно взять backbone $\pi^{SFT}$).}}
+
+	\only<12->{
+			Теперь можно применять PPO... Или нет? \onslide<13->{Мы не хотим, чтобы итоговая $\pi^{RLHF}$ сильно отличалась от $\pi^{SFT}$. \textit{Как это контролировать?}}
+		}
+\end{frame}
+
+\begin{frame}{KL-дивергенция}
+	Пусть мы имеем два дискретных распределения $\pi(\cdot | s_{t})$ и $\pi^{SFT}(\cdot | s_{t})$ --- хотим насколько близко они между собой, ввести <<метрику>>. \onslide<2->{Давайте рассмотрим:
+
+			$$
+				D_{KL}(\pi(\cdot | s_{t}) \parallel \pi^{SFT}(\cdot | s_{t})) = \sum\limits_{a} \pi(a | s_{t}) \log \frac{\pi(a | s_{t})}{\pi^{SFT}(a | s_{t})} \geqslant 0
+			$$}
+
+	\onslide<3->{\textit{Почему это не метрика?}} \onslide<4->{Например, она не симметричная.}
+
+	\onslide<5->{Тогда давайте добавим в наш reward регуляризационный член: $\hlred{RM_{\psi}(y|x) - \beta D_{KL}(\pi(\cdot | s_{t}) \parallel \pi^{SFT}(\cdot | s_{t}))}$.}
+\end{frame}
+
+\begin{frame}{Пайплан обучения}
+	Инициализируем модели $\pi_{\theta^{(0)}}, V_{\varphi^{(0)}}$ из backbone $\pi^{SFT}$ (можно прям использовать один и тот же backbone для обеих моделей).
+
+	\begin{enumerate}
+		\item<2-> Выбираем промпт $\vec{q}$.
+		\item<3-> Генерируем последовательность $\vec{o}$ ответа из $\pi_{\theta^{(k)}}$.
+		\item<4-> Параллельно подсчитываем $V_{\varphi^{(k)}}({o}_{t})$.
+
+		      $r_{t}$ для всех шагов кроме последнего определяется как $-\beta D_{KL}(\dots)$, а для последнего $RM(\vec{o}|\vec{q})-\beta D_{KL}(\dots)$.
+		\item<5-> Далее считаются $\delta_{t}$ и, соответственно, $\hat{A}_{t}:=\delta_{t}+\gamma\lambda \hat{A}_{t+1}$
+		\item<6-> Далее оптимизируется $\mathcal{L}^{CLIP+VF+S}(\theta^{(k)}, \varphi^{(k)})$. \onslide<7->{\textit{Что? Да!}}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Лосс-функция}
+	$$
+		\mathcal{L}^{CLIP+VF+S}(\theta, \varphi) := \mathbb E_{t}[\only<1>{\hlred}{\mathcal{L}_{t}^{CLIP}(\theta)} - c_{1}\only<2>{\hlred}{\mathcal{L}_{t}^{VF}(\varphi)} + c_2\only<3>{\hlred}{S[\pi_{\theta^{(k)}}](s_{t})}]
+	$$
+
+	Так как мы используем общий backbone для $\pi_{\theta}, V_{\varphi}$, то и лосс мы собрали общий.
+
+	\hspace{0.2em}
+
+	\onslide<3>{Также зачастую добавляется \textbf{entropy bonus} $S[\pi](s) := -\sum\limits_{a} \pi(a|s)\log\pi(a|s)$ --- энтропия Шеннона (таким образом мы поощряем <<разнообразие>> модели).}
+\end{frame}
+
+% ============================================================
+
+\section{RLVR}
+
+\sectionslide{RLVR (RL with Verifiable Rewards)}
+
+% ============================================================
+
+\begin{frame}{GRPO: групповая оценка}
+	\textbf{Идея}: попробуем заменить модель критик просто оценив baseline семплированием.
+
+	\\[0.5em]
+
+	\onslide<2->{
+			Для каждого промпта $q$ семплируем \textbf{группу} из $G$ ответов от старой политики:
+			$$
+				o_1, o_2, \ldots, o_G \;\sim\; \pi_{\theta^{(k)}}(\cdot \mid q)
+			$$}
+
+	\onslide<3->{
+			Для каждого ответа получаем reward $r_i$. Тогда \textbf{advantage}:
+			$$
+				\hlred{\hat{A}_{i} = \frac{r_i - \mu_G}{\sigma_G}}, \quad
+				\mu_G = \frac{1}{G}\sum_{j=1}^G r_j,\quad
+				\sigma_G = \sqrt{\frac{1}{G}\sum_{j=1}^G (r_j - \mu_G)^2}
+			$$}
+\end{frame}
+
+\begin{frame}{GRPO: целевая функция}
+	\begin{block}{GRPO Objective}
+		$$
+			\mathcal{L}^{\mathrm{GRPO}}(\theta) = \mathbb{E}_{q,\,\{o_i\}}\!\left[
+				\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|o_i|}\sum_{t=1}^{|o_i|}
+				\mathcal{L}^{CLIP}_{t}(\theta)
+				- \beta\, D_{KL}(\pi_\theta \|\pi^{ref})
+				\right]
+		$$
+	\end{block}
+\end{frame}
+
+\begin{frame}{Постановка проблемы}
+	\imagewithtext{static/images/meme05.jpg}{
+		\textbf{Verifiable Reward} --- пусть у нас есть задача, которую мы можем объективно оценить (e.g., математика, алгозадачки).
+
+		\hspace{0.5em}
+
+		Хочется научить модель \textit{мыслить} и обосновывать свой ход решения.
+	}
+\end{frame}
+
+\begin{frame}{DeepSeek-R1-Zero}
+	\textit{Попробуем обойтись без SFT и сразу применить GRPO к базовой модели}
+
+	\\[1em]
+
+	\onslide<2->{Попробовали. Модель действительно научилась решать задачи и даже перепроверять своё решение. Но...} \onslide<3->{Ответы были poor-formated и часто содержали несколько языков (то есть reasoning traces были тяжело читаемы).}
+
+	\onslide<2->{
+			\oneimage{static/images/aha_moment.png}{}{0.5\linewidth}
+		}
+\end{frame}
+
+\begin{frame}{Cold-Start SFT}
+	\textbf{Проблема}: базовая модель не умеет оформлять мысли в виде рассуждений. Если сразу дать ей GRPO, она находит правильные ответы, но <<думает>> хаотично.
+
+	\onslide<2->{
+			\textbf{Решение}: несколько тысяч вручную отобранных примеров с reasoning traces:
+			$$
+				\texttt{<think> шаг 1 ... шаг N </think> <answer> ответ </answer>}
+			$$}
+\end{frame}
+
+\begin{frame}{GRPO}
+	Теперь запускаем GRPO. Reward-модели нет --- только два типа наград:
+	\begin{itemize}
+		\item<2-> \textbf{Correctness reward}: ответ совпадает с ground truth? $+1$ или $0$.
+		\item<3-> \textbf{Format reward}: формат \texttt{<think>...</think>} + language consistency
+	\end{itemize}
+
+	\oneimage{static/images/GRPO_scheme.png}{}{0.75\linewidth}
+\end{frame}
+
+\begin{frame}{Rejection Sampling SFT}
+	После первого GRPO модель хорошо рассуждает, но всё ещё бывает нестабильна по стилю.
+
+	\onslide<2->{\textbf{Идея}: использовать саму модель для генерации обучающих данных.
+			\begin{enumerate}
+				\item<3-> Генерируем ${\sim}800\text{k}$ ответов модели на новые задачи.
+				\item<4-> Отбрасываем неверные (верификатором) и стилистически плохие (LLM-as-Judge).
+				\item<5-> Докидываем данные из non-reasoning задач.
+				\item<6-> SFT на всём этом.
+			\end{enumerate}}
+
+	\onslide<6->{\textbf{Зачем?} RL хорош для поиска нового поведения, но неэффективен для его \emred{закрепления}. SFT на собственных хороших выходах --- дешёвый способ дистиллировать найденное RL поведение обратно в веса.}
+\end{frame}
+
+\begin{frame}{GRPO для alignment}
+	Теперь модель умеет рассуждать, но обучалась только на math/code задачах. Нужно сделать её \textit{helpful assistant}.
+
+	\\[0.5em]
+
+	\onslide<2->{Запускаем GRPO ещё раз, но уже:
+			\begin{itemize}
+				\item<3-> На широком спектре задач (не только верифицируемых).
+				\item<4-> С general reward model (обученной на предпочтениях людей).
+				\item<5-> С дополнительными safety-ограничениями.
+			\end{itemize}}
+\end{frame}
+
+\begin{frame}{Итоговый пайплайн}
+	\oneimage{static/images/deepseek_r1.png}{}{0.9\linewidth}
+\end{frame}
+
+% ============================================================
+
+\section{RLVR Interpretiability}
+
+\sectionslide{Действительно ли RLVR учит рассуждать?}
+
+% ============================================================
+
+\begin{frame}{Постановка проблемы}
+	До этого мы говорили, что модель \textit{учится} рассуждать с помощью RLVR. Но насколько действительно \textit{новые} стратегии модель выучивает?
+
+	\\[1em]
+
+	\onslide<2->{
+			Судя по всему, более корректно говорить о том, что RLVR просто перераспределяет вероятности так, чтобы корректный reasoning trace стал более вероятным.
+
+			\oneimage{static/images/rlvr_trees.png}{}{0.5\linewidth}
+		}
+\end{frame}
+
+\begin{frame}{pass@k}
+
+	\only<1>{Если рассматривать $pass@1$ метрику (то есть вероятность правильно ответить на задачу у моделей), то RLVR-model действительно показывает себя лучше base.}
+
+	\only<2>{
+			Однако если рассматривать $pass@k$ для больших $k$ (то есть вероятность решить задачу за $k$ попыток), то мы увидим, что зачастую модели не отличаются (или RLVR проигрывает).
+
+			\oneimage{static/images/pass_k_curves.png}{}{0.75\linewidth}}
+
+	\only<3>{Более того, RLVR уменьшает изначальный coverage решаемых задач base модели.
+			\begin{table}[h]
+				\centering
+				\begin{tabular}{cc|cc}
+					\toprule
+					\textbf{Base} & \textbf{SimpleRLZoo} & \textbf{AIME24} & \textbf{MATH500} \\
+					\midrule
+					$\checkmark$  & $\checkmark$         & 63.3\%          & 92.4\%           \\
+					$\checkmark$  & $\times$             & 13.3\%          & 3.6\%            \\
+					$\times$      & $\checkmark$         & 0.0\%           & 1.0\%            \\
+					$\times$      & $\times$             & 23.3\%          & 3.0\%            \\
+					\bottomrule
+				\end{tabular}
+			\end{table}
+		}
+\end{frame}
+
+\begin{frame}{Все алгоритмы одинаково далеки от потолка}
+	Рассмотрим \textbf{sampling efficiency gap}:
+	$$
+		\Delta_{SE} = \underbrace{\text{pass@}1_{\text{RL}}}_{\text{достигнутое}} - \underbrace{\text{pass@}256_{\text{base}}}_{\text{потолок}}
+	$$
+
+	\onslide<2>{
+			\oneimage{static/images/different_rl_curves.png}{}{0.6\linewidth}
+		}
+\end{frame}
+
+\begin{frame}{RLVR vs Дистилляция}
+	\imagewithtext{static/images/distilled_curves.png}{
+		Заметим, что тот же паттерн не повторяется при дистилляции, то есть reasoning'у действительно можно научиться у другой модели.
+	}
+\end{frame}
+
+% ── FINAL SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\finalslide{\ContactURL}{\FeedbackURL}
+\end{frame}
+
+\end{document}

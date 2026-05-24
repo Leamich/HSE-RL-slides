@@ -1,1 +1,1 @@
-pdflatex -synctex=1 -interaction=nonstopmode -output-directory=out slides.tex
+pdflatex -synctex=1 -interaction=nonstopmode -output-directory=out $1
