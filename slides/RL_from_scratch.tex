@@ -1,0 +1,469 @@
+% ============================================================
+%  HSE University — Beamer Presentation Template
+%  Resolution  : 1920 × 1080  (aspectratio=169)
+%  Compiler    : pdfLaTeX  (Overleaf)
+%  Theme file  : hse.sty  (must be in the same folder)
+% ============================================================
+\documentclass[aspectratio=169,12pt,t,compress]{beamer}
+
+% ── Russian language support ─────────────────────────────────
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+
+\usepackage{booktabs}
+\usepackage{amsmath, amssymb, amsthm} % Чтобы юзать математические символы
+
+% ── HSE theme ────────────────────────────────────────────────
+\usepackage{static/hse}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+\setbeamertemplate{headline}[hse theme]
+\setbeamertemplate{frametitle}[hse theme]
+\setbeamertemplate{footline}[hse theme]
+
+% ── Override localisation macros (now UTF-8 is active) ───────
+\renewcommand{\LogoPlaceholderText}{МФТИ\,/\,MIPT\\LOGO}
+\renewcommand{\LogoImage}{static/images/mipt_eng_inv_png.png}
+\renewcommand{\ThankYouText}{Спасибо за внимание!}
+\renewcommand{\ContactsText}{Telegram}
+\renewcommand{\FeedbackText}{Материалы}
+
+% ── Additional packages ───────────────────────────────────────
+\usepackage{qrcode}   % QR codes on the final slide
+
+% ============================================================
+%  PRESENTATION METADATA — fill in before use
+% ============================================================
+\newcommand{\EventName}{Летняя ОШ}
+\newcommand{\EventLocation}{МФТИ}
+\newcommand{\PresentationTitle}{Обучение с подкреплением с нуля}
+\newcommand{\PresentationSubtitle}{От случайной политики до посадки на Луну}
+\newcommand{\AuthorName}{Леонтьев Михаил}
+\newcommand{\AuthorRole}{ML-researcher}
+\newcommand{\AuthorAffiliation}{ЛОШ МФТИ}
+\newcommand{\PresentationDate}{24 августа 2026}
+
+% Text shown in the footer (left side)
+\renewcommand{\FooterLeft}{\AuthorName\ \textbullet\ \AuthorAffiliation}
+
+% URLs for the final slide QR codes
+\newcommand{\ContactURL}{https://t.me/michlea\_tg}
+\newcommand{\FeedbackURL}{https://github.com/Leamich/HSE-RL-slides}
+% ============================================================
+\begin{document}
+
+% ── TITLE SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\titlepage
+\end{frame}
+
+% ── TABLE OF CONTENTS ────────────────────────────────────────
+\begin{frame}{Содержание}
+	\tableofcontents
+\end{frame}
+
+% ============================================================
+
+\section{Почему это не supervised}
+\sectionslide{Почему это не supervised}
+
+% ============================================================
+
+\begin{frame}{Запускаем случайную политику}
+	\imagewithtext{static/images/mario.jpg}{%
+		\onslide<1->{Представьте, что вам нужно научить алгоритм играть в Марио. У вас есть: приставка с этой игрой и --- В~С~Ё.}
+
+		\vspace{0.5em}
+
+		\onslide<2->{Запускаем случайные нажатия кнопок и смотрим, что получится.}
+
+		\vspace{0.5em}
+
+		\onslide<3->{\textit{Где здесь $X$ и $y$?}}
+	}
+\end{frame}
+
+\begin{frame}{Три отличия от supervised learning}
+	\begin{enumerate}
+		\item<1-> \textbf{Нет разметки}. Никто не сказал нам заранее, какое действие правильное в каждом кадре.
+		\item<2-> \textbf{Выборку агент пишет себе сам}. Данные --- это то, что агент увидел, играя своей же (пока плохой) стратегией.
+		\item<3-> \textbf{Награда отложена}. Хороший ход может окупиться только через сотню шагов --- как жертва фигуры в шахматах.
+	\end{enumerate}
+
+	\vspace{0.5em}
+
+	\onslide<4->{
+		\begin{emphblock}{Итог}
+			Мы не учим функцию по готовым парам (вход, ответ). Мы учим \emph{стратегию действий}, наблюдая последствия собственных решений.
+		\end{emphblock}
+	}
+\end{frame}
+
+% ============================================================
+
+\section{Словарь}
+\sectionslide{Словарь}
+
+% ============================================================
+
+\begin{frame}{Цикл взаимодействия}
+	\imagewithtext{static/images/reward_cycle.jpg}{
+		В каждый момент времени $t$:
+		\begin{itemize}
+			\item<1-> Среда находится в состоянии (\textbf{state}) $s_{t}$
+			\item<2-> Агент делает действие (\textbf{action}) $a_{t}$
+			\item<3-> Агент получает награду (\textbf{reward}) $r_{t}$
+			\item<4-> Среда переходит в состояние $s_{t+1}$
+		\end{itemize}
+
+		\vspace{0.5em}
+		\onslide<5->{<<Игрок>> --- это \textbf{policy} $\pi(a_t\mid s_t)$: насколько хорошо в состоянии $s_t$ сделать действие $a_t$.}
+	}
+\end{frame}
+
+
+\begin{frame}{Примеры}
+	\centering
+	\small
+	\begin{tabular}{|p{2.2cm}|p{2.8cm}|p{4.0cm}|p{3cm}|}
+		\hline
+		\textbf{Задача}    & \textbf{Action Space}           & \textbf{State Space}                                                           & \textbf{Reward}                                               \\
+		\hline
+		\onslide<1->{Марио}              & \onslide<2->{Дискретные: кнопки джойстика    & Кадр экрана, позиции врагов и объектов, скорость персонажа                     & + за прогресс и очки, - за смерть/урон}                        \\
+		\hline
+		\onslide<2->{Робот-манипулятор}  & \onslide<3->{Непрерывные: моменты в моторах  & Углы суставов, показания камер и датчиков                                      & + за успешный захват, - за время и энергию}                    \\
+		\hline
+	\end{tabular}
+
+	\vspace{1em}
+
+	\onslide<4->{Разные пространства, разные награды --- но \emph{один и тот же} цикл взаимодействия.}
+\end{frame}
+
+
+\begin{frame}{Ценность}
+	\onslide<1->{\textbf{Value} состояния --- это <<сколько награды я в среднем наберу до конца эпизода, если начну отсюда и буду следовать своей стратегии>>:}
+	\onslide<2->{
+		$$
+			V^\pi(s) = \mathbb{E}_\pi\bigl[r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots \;\big|\; s_t = s\bigr]
+		$$
+	}
+
+	\vspace{0.5em}
+
+	\onslide<3->{
+		\begin{emphblock}{Аналогия}
+			Это то же самое, что оценка позиции в шахматах: не <<сколько фигур на доске прямо сейчас>>, а <<насколько вероятно из этой позиции выиграть партию>>.
+		\end{emphblock}
+	}
+\end{frame}
+
+\begin{frame}{Дисконт $\gamma$}
+	\imagewithtext{static/images/discounting.png}{
+		\onslide<1->{Коэффициент $\gamma \in [0, 1]$ --- насколько далеко вперёд агент готов планировать.}
+
+		\vspace{0.5em}
+
+		\begin{itemize}
+			\item<2-> $\gamma \to 0$: важен только следующий шаг --- <<близорукий>> агент.
+			\item<3-> $\gamma \to 1$: одинаково важны и ближайшая, и далёкая награда --- <<дальновидный>> агент.
+		\end{itemize}
+
+		\vspace{0.5em}
+
+		\onslide<4->{$\gamma$ --- это горизонт планирования, зашитый в формулу.}
+	}
+\end{frame}
+
+% ============================================================
+
+\section{Q-Learning}
+
+\subsection{Мир известен}
+\sectionslide{Мир известен}
+
+% ============================================================
+
+\begin{frame}{Cliff Walking}
+	\begin{columns}[c]
+		\column{0.48\textwidth}
+		\centering
+		\begin{tikzpicture}[scale=0.62, every node/.style={font=\scriptsize}]
+			\foreach \x in {0,...,5}
+			\foreach \y in {0,...,2}
+			\draw[HSEGray!45] (\x,\y) rectangle (\x+1,\y+1);
+			\foreach \x in {1,2,3,4}
+			\fill[HSERed!60] (\x,0) rectangle (\x+1,1);
+			\fill[HSEGreen!55] (0,0) rectangle (1,1);
+			\fill[HSECyan!55] (5,0) rectangle (6,1);
+			\node[font=\bfseries] at (0.5,0.5) {S};
+			\node[font=\bfseries] at (5.5,0.5) {G};
+			\node[HSERed!80!black, font=\bfseries\tiny] at (2.5,0.5) {ПРОПАСТЬ};
+			\draw<2->[HSERed, thick, densely dashed, -{Stealth[length=2.2mm]}]
+			(0.35,0.5) -- (0.35,1.5) -- (5.65,1.5) -- (5.65,0.5);
+			\draw<3->[HSEBlue, thick, -{Stealth[length=2.2mm]}]
+			(0.65,0.5) -- (0.65,2.5) -- (5.35,2.5) -- (5.35,0.5);
+		\end{tikzpicture}
+		\column{0.48\textwidth}
+		Карта-обрыв: старт слева внизу, цель справа внизу, вдоль всего нижнего края --- пропасть.
+
+		\vspace{0.5em}
+
+		\onslide<2->{\textcolor{HSERed}{Вдоль края} --- короткий, но опасный маршрут.}
+
+		\vspace{0.3em}
+
+		\onslide<3->{\textcolor{HSEBlue}{Через верх} --- длиннее, но безопасный.}
+
+		\vspace{0.5em}
+
+		\onslide<4->{\textit{Какой из них окажется оптимальным?}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Уравнение Беллмана}
+	\onslide<1->{Если мир нам известен (мы знаем $P(s'\mid s,a)$ и $r(s,a)$ для \emph{любых} $s, a$), ценность состояния раскладывается на <<шаг + остальное>>:}
+
+	\begin{columns}[c]
+		\column{0.42\textwidth}
+		\centering
+		\onslide<2->{
+			\begin{tikzpicture}[scale=0.85,
+					state/.style={circle, draw=HSEBlue, thick, fill=white, minimum size=7mm},
+					action/.style={circle, draw=HSEBlue, thick, fill=HSEBlue, minimum size=2mm, inner sep=0pt}]
+				\node[state] (s) at (0,2) {$s$};
+				\node[action] (a1) at (-1.3,0.6) {};
+				\node[action] (a2) at (1.3,0.6) {};
+				\draw[HSEGray] (s) -- (a1) node[midway, above left, font=\scriptsize] {$a_1$};
+				\draw[HSEGray] (s) -- (a2) node[midway, above right, font=\scriptsize] {$a_2$};
+				\node[state] (s11) at (-2.1,-0.9) {\tiny$s'$};
+				\node[state] (s12) at (-0.6,-0.9) {\tiny$s'$};
+				\node[state] (s21) at (0.6,-0.9) {\tiny$s'$};
+				\node[state] (s22) at (2.1,-0.9) {\tiny$s'$};
+				\draw[HSERed] (a1) -- (s11);
+				\draw[HSERed] (a1) -- (s12);
+				\draw[HSERed] (a2) -- (s21);
+				\draw[HSERed] (a2) -- (s22);
+			\end{tikzpicture}
+		}
+		\column{0.58\textwidth}
+		\onslide<2->{
+			\begin{emphblock}{Bellman equation}
+				$$
+					V(s) = \max_a \Bigl[r(s,a) + \gamma \sum_{s'} P(s' \mid s,a)\, V(s')\Bigr]
+				$$
+			\end{emphblock}
+		}
+	\end{columns}
+
+	\vspace{0.3em}
+
+	\onslide<3->{Словами: \emph{ценность состояния = лучшая награда за один шаг + продисконтированная ценность того, куда мы попадём}.}
+\end{frame}
+
+\begin{frame}{Value Iteration}
+	\begin{enumerate}
+		\item<1-> Инициализируем $V(s) = 0$ для всех $s$.
+		\item<2-> На каждой итерации обновляем \emph{все} состояния разом:
+		      $$
+			      V(s) \leftarrow \max_a \Bigl[r(s,a) + \gamma \sum_{s'} P(s'\mid s,a)\, V(s')\Bigr]
+		      $$
+		\item<3-> Повторяем, пока $V$ не перестанет меняться.
+		\item<4-> Политика: $\pi(s) = \arg\max_a \bigl[r(s,a) + \gamma \sum_{s'} P(s'\mid s,a)\, V(s')\bigr]$.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}{Демо №1. Волна ценности}
+	\oneimage{static/images/demo1.png}{Value Iteration: как оценка растекается от цели к старту по мере итераций}{0.85\linewidth}
+\end{frame}
+
+\begin{frame}{Демо №2. Три ручки}
+	\begin{center}
+		\includegraphics[height=0.78\textheight,keepaspectratio]{static/images/demo2.png}
+	\end{center}
+\end{frame}
+
+% ============================================================
+
+\subsection{Мир неизвестен}
+\sectionslide{Мир неизвестен}
+
+% ============================================================
+
+\begin{frame}{Q-learning: идея}
+	\onslide<1->{Раз модели мира нет --- будем действовать и \emph{подвигать} оценку в сторону того, что реально увидели.}
+
+	\vspace{0.3em}
+
+	\onslide<2->{
+		\centering
+		\begin{tikzpicture}[scale=0.85, every node/.style={font=\small}]
+			\node[draw=HSEBlue, thick, circle, fill=white, minimum size=8mm] (s) at (0,0) {$s$};
+			\node[draw=HSEBlue, thick, circle, fill=white, minimum size=8mm] (sp) at (4.2,0) {$s'$};
+			\draw[-{Stealth}, HSEGray, thick] (s) -- (sp) node[midway, above, font=\scriptsize] {$a,\; r$};
+			\draw[HSERed, thick, -{Stealth}, densely dashed] (s.south) .. controls (2.1,-1.6) .. (sp.south);
+			\node[below, font=\scriptsize] at (2.1,-1.7) {цель: $r+\gamma\max_{a'}Q(s',a')$};
+		\end{tikzpicture}
+	}
+
+	\onslide<3->{
+		\begin{emphblock}{Temporal Difference update}
+			$$
+				Q(s,a) \leftarrow Q(s,a) + \alpha \Bigl[\underbrace{r + \gamma \max_{a'} Q(s',a')}_{\text{увидели}} - \underbrace{Q(s,a)}_{\text{думали}}\Bigr]
+			$$
+		\end{emphblock}
+	}
+\end{frame}
+
+\begin{frame}{Exploration vs. Exploitation}
+	\onslide<1->{\oneimage{static/images/exploration.jpg}{}{0.62\linewidth}}
+
+	\onslide<2->{\centering\textit{Какая стратегия здесь оптимальна?}}
+\end{frame}
+
+\begin{frame}{$\varepsilon$-greedy}
+	Чтобы не зациклиться на первом найденном решении, действуем так:
+	\begin{itemize}
+		\item<1-> с вероятностью $1-\varepsilon$ --- жадно, $a = \arg\max_a Q(s,a)$;
+		\item<2-> с вероятностью $\varepsilon$ --- случайно, чтобы попробовать что-то новое.
+	\end{itemize}
+
+	\vspace{0.5em}
+
+	\onslide<3->{Компромисс: слишком мало исследования --- рискуем не найти хорошую стратегию; слишком много --- слишком часто действуем случайно.}
+\end{frame}
+
+\begin{frame}{Демо №3. Q-learning рядом с эталоном}
+	\begin{center}
+		\includegraphics[height=0.78\textheight,keepaspectratio]{static/images/demo3.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}{Демо №4. Что бывает без исследования}
+	\begin{center}
+		\includegraphics[height=0.78\textheight,keepaspectratio]{static/images/demo4.png}
+	\end{center}
+\end{frame}
+
+
+% ============================================================
+
+\section{DQN (Deep Q-Network)}
+\sectionslide{DQN}
+
+% ============================================================
+
+\begin{frame}{От таблицы к сети}
+	\onslide<1->{Таблицу $Q(s,a)$ нельзя выписать --- значит, нужно её \emph{приблизить}.}
+
+	\vspace{0.4em}
+
+	\onslide<2->{
+		\centering
+		\begin{tikzpicture}[scale=0.8]
+			% table icon
+			\foreach \i in {0,1,2,3} \draw[HSEGray] (0,\i*0.5) -- (2,\i*0.5);
+			\foreach \j in {0,1,2} \draw[HSEGray] (\j,0) -- (\j,1.5);
+			\node[font=\tiny, below] at (1,-0.15) {$Q(s,a)$};
+			% arrow
+			\draw[-{Stealth}, thick, HSEBlue] (2.35,0.75) -- (3.35,0.75);
+			% network
+			\begin{scope}[shift={(4.2,0)}, every node/.style={circle, draw=HSEBlue, fill=white, minimum size=4mm, inner sep=0pt}]
+				\foreach \i/\y in {1/0,2/0.5,3/1,4/1.5} \node (in\i) at (0,\y) {};
+				\foreach \i/\y in {1/0.2,2/0.7,3/1.2} \node (h\i) at (1.2,\y) {};
+				\foreach \i/\y in {1/0.4,2/1} \node (o\i) at (2.4,\y) {};
+				\foreach \i in {1,2,3,4} \foreach \j in {1,2,3} \draw[HSEGray!60] (in\i) -- (h\j);
+				\foreach \i in {1,2,3} \foreach \j in {1,2} \draw[HSEGray!60] (h\i) -- (o\j);
+			\end{scope}
+			\node[font=\tiny, below] at (5.4,-0.15) {$Q_\theta(s,a)$};
+		\end{tikzpicture}
+	}
+
+	\vspace{0.4em}
+
+	\onslide<3->{Обучаем той же формулой, но двигаем не ячейку таблицы, а веса сети:
+		$$
+			\theta \leftarrow \theta - \alpha \nabla_\theta \Bigl(Q_\theta(s,a) - \bigl[r + \gamma \max_{a'} Q_\theta(s',a')\bigr]\Bigr)^2
+		$$}
+\end{frame}
+
+\begin{frame}{Три поломки, три заплатки}
+	\centering
+	\footnotesize
+	\begin{tabular}{|p{4.1cm}|p{5.6cm}|}
+		\hline
+		\textbf{Поломка} & \textbf{Заплатка}                                                                        \\
+		\hline
+		\onslide<1->{Соседние шаги коррелированы & \textbf{Replay buffer}: учимся на случайном перемешанном наборе прошлых переходов} \\
+		\hline
+		\onslide<2->{Таргет зависит от $\theta$ & \textbf{Замороженная копия} $Q_{\theta^-}$: цель считаем по старой, редко обновляемой копии} \\
+		\hline
+		\onslide<3->{Жадная политика с начала --- сеть не успевает исследовать & \textbf{$\varepsilon$-расписание}: $\varepsilon$ убывает от $1$ до малого значения} \\
+		\hline
+	\end{tabular}
+
+	\vspace{0.4em}
+
+	\onslide<4->{
+		\begin{tikzpicture}[scale=0.5]
+			\draw[-{Stealth}, thick, HSEGray] (0,0) -- (6,0) node[right, font=\tiny] {эпизод};
+			\draw[-{Stealth}, thick, HSEGray] (0,0) -- (0,1.6) node[above, font=\tiny] {$\varepsilon$};
+			\draw[HSEBlue, thick] (0,1.5) to[out=-20,in=160] (2.5,0.5) to[out=-20,in=160] (6,0.15);
+			\node[font=\tiny, left] at (0,1.5) {$1$};
+			\node[font=\tiny, left] at (0,0.15) {$\varepsilon_{\min}$};
+		\end{tikzpicture}
+	}
+\end{frame}
+
+\begin{frame}{Демо №5. LunarLander: три ролика}
+	\oneimage{static/images/demo5.png}{Агент садится между флажками --- задача с непрерывным состоянием и дискретными действиями}{0.5\linewidth}
+\end{frame}
+
+\begin{frame}{Демо №6. Q-значения поверх видео}
+	\oneimage{static/images/demo6.png}{$Q(s,a)$ для каждого действия в текущем кадре: видно, какое действие сеть считает лучшим}{0.85\linewidth}
+\end{frame}
+
+% ============================================================
+
+\section{RLHF}
+\sectionslide{RLHF}
+
+% ============================================================
+
+
+\begin{frame}{Мостик к RLHF}
+	\imagewithtext{static/images/finetune_llm_scheme.jpg}{
+		\onslide<1->{У LLM то же самое: reward --- это не человек с кнопкой, а обученная \emph{модель предпочтений}.}
+
+		\vspace{0.5em}
+
+		\begin{itemize}
+			\item<2-> state --- промпт + написанная часть ответа;
+			\item<3-> action --- очередной токен;
+			\item<4-> reward --- оценка reward-модели, обученной на парах <<какой ответ лучше>>.
+		\end{itemize}
+
+		\onslide<5->{Тот же цикл, то же уравнение Беллмана --- просто состояние и награда устроены иначе.}
+	}
+\end{frame}
+
+\begin{frame}{Куда дальше}
+	\onslide<1->{Q-learning и DQN --- это \emph{value-based} методы: учим ценность, действие выбираем через $\arg\max$. Хорошо для дискретных действий (4 двигателя <<вкл/выкл>>).}
+
+	\vspace{0.5em}
+
+	\onslide<2->{
+		\begin{emphblock}{А если тяга непрерывная?}
+			$\arg\max_a Q(s,a)$ по непрерывному $a$ решать дорого. Нужен другой класс методов --- \emph{policy gradient}: учим стратегию напрямую (REINFORCE $\to$ Actor-Critic $\to$ PPO).
+		\end{emphblock}
+	}
+\end{frame}
+
+% ── FINAL SLIDE ──────────────────────────────────────────────
+\begin{frame}[plain,noframenumbering]
+	\finalslide{\ContactURL}{\FeedbackURL}
+\end{frame}
+
+\end{document}

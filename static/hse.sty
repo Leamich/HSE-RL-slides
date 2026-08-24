@@ -20,6 +20,7 @@
 % ── Localisation macros (override after \usepackage{hse}) ────
 % These defaults are ASCII so the .sty itself stays encoding-neutral.
 \providecommand{\LogoPlaceholderText}{HSE\,/\,LOGO}
+\providecommand{\LogoImage}{static/images/spb_white.png}
 \providecommand{\ThankYouText}{Thank you!}
 \providecommand{\ContactsText}{Contact}
 \providecommand{\FeedbackText}{Feedback}
@@ -177,7 +178,7 @@
 		%  Replace \logobox with \includegraphics[height=1.2cm]{hse-logo}
 		\node[anchor=north east, inner sep=0pt]
 		at ([xshift=-18pt,yshift=-14pt]current page.north east){%
-			\includegraphics[height=1.2cm]{static/images/spb_white.png}%
+			\includegraphics[height=1.2cm]{\LogoImage}%
 		};
 
 		%% ── Event + location line ──────────────────────────────
@@ -315,7 +316,7 @@
 			rectangle ([yshift=6pt]current page.south east);
 			\node[anchor=north east, inner sep=0pt]
 			at ([xshift=-18pt,yshift=-14pt]current page.north east){%
-				\includegraphics[height=1.2cm]{static/images/spb_white.png}%
+				\includegraphics[height=1.2cm]{\LogoImage}%
 			};
 			\node[text=white, font=\Huge\bfseries,
 				text width=0.74\paperwidth, align=center]

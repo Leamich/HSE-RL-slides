@@ -1,8 +1,24 @@
 # Открытые лекции по RL
 
-Здесь собраны материалы по стихийному созданному циклу лекций по основам RL (пока их две). Лекции между собой независимы и читались на разные аудитории (подробнее см. ниже).
+Здесь собраны материалы по стихийному созданному циклу лекций по основам RL (пока их три). Лекции между собой независимы и читались на разные аудитории (подробнее см. ниже).
 
 *Автор*. [Леонтьев Михаил](https://github.com/Leamich), TG: [@michlea_tg](https://t.me/michlea_tg).
+
+## ЛОШ МФТИ по Machine Learning (24.08.2026)
+
+[[pdf](out/RL_from_scratch.pdf)] [[notebook](notebooks/rl_demo.ipynb)]
+
+С нуля и по шагам: почему RL --- это не supervised learning, цикл взаимодействия агента со средой, уравнение Беллмана, Value Iteration, Q-learning, ε-greedy, DQN (replay buffer, target network, ε-schedule) и мостик к RLHF. Все демо (Cliff Walking, LunarLander) собраны в приложенном ноутбуке.
+
+Лекция была прочитана в рамках ЛОШ МФТИ по Machine Learning.
+
+### Материалы
+
+1. [Reinforcement Learning: An Introduction | Sutton & Barto](http://incompleteideas.net/book/the-book.html)
+2. [Playing Atari with Deep Reinforcement Learning | arxiv](https://arxiv.org/abs/1312.5602)
+3. [Hugging Face Deep RL Course](https://huggingface.co/learn/deep-rl-course/)
+4. [Обучение с подкреплением | Хэндбук Яндекс Образования](https://education.yandex.ru/handbook/ml/article/obuchenie-s-podkrepleniem)
+5. [Gymnasium (Farama) docs](https://gymnasium.farama.org/)
 
 ## ИТМО Хакатон (24.05.2026)
 
